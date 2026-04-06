@@ -1,3 +1,6 @@
+$def_path = ".\data\locale"
+$def_locale_name = "en-US.ini"
+$my_locale_name = "aa-ZZ.ini"
 function ReadLocaleAsArray {
     param (
         $fileName
@@ -13,6 +16,9 @@ function ReadLocale {
         $fileName
     )
     $r = @{}
+    if (!(Test-Path $fileName)) {
+        New-Item -Path $fileName -ItemType File | Out-Null
+    }
     Get-Content $fileName | Foreach-Object {
         $x = $_.Split("=")
         $r[$x[0]] = $x[1]
@@ -20,10 +26,10 @@ function ReadLocale {
     return $r
 }
 
-$en_locale = ReadLocaleAsArray ".\data\locale\en-US.ini"
+$en_locale = ReadLocaleAsArray ($def_path + "\" + $def_locale_name)
 
-Get-ChildItem ".\data\locale" -File | ForEach-Object {
-    $cur_locale = ReadLocale (".\data\locale" + "\" + $_.Name)
+Get-ChildItem $def_path -File | ForEach-Object {
+    $cur_locale = ReadLocale ($def_path + "\" + $my_locale_name)
     $en_locale `
     | ForEach-Object {
         if ($cur_locale.ContainsKey($_.Key)) {
@@ -32,5 +38,5 @@ Get-ChildItem ".\data\locale" -File | ForEach-Object {
             return $_.Key + "=" + $_.Value
         }
     } `
-    | Set-Content -Path (".\data\locale" + "\" + $_.Name)
+    | Set-Content -Path ($def_path + "\" + $my_locale_name)
 }
